@@ -1,0 +1,19 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8" />
+	<title>Register</title>
+</head>
+<body>
+	<h1>Register Page</h1>
+	<form method="POST" action"">
+		{{form.hidden_tag()}}
+		{{form.username}}
+		{{form.password}}
+		{{form.submit}}
+
+	</form>
+	<a href="{{url_for('login')}}">Login Page</a>
+</body>
+</html>

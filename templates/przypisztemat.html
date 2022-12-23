@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Przypisz temat</title>
+</head>
+<body>
+	<h1>Przypisz temat</h1>
+<<form method="POST" action="{{ url_for('przypisz_temat') }}">
+	<label for="tematy">Wybierz temat:</label><br>
+	<select id="tematy" name="temat_id">
+		{% for temat in data %}
+		<option value="{{ temat.id }}">{{ temat.nazwa }}</option>
+		{% endfor %}
+	</select>
+	<input type="submit" value="Przypisz">
+</form>
+
+
+
+
+</body>
+</html>

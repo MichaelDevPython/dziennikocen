@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<style>
+
+	td {
+		width: 150px;
+		text-align: center;
+		border: 2px solid blue;
+		padding: 5px;
+	}
+</style>
+<table>
+	<thead>
+	<tr>
+		<th>Lp.</th>
+		<th>Przedmiot</th>
+		<th>Ocena</th>
+		<th>Projekt</th>
+		<th>Ocena</th>
+		<th>Egzamin</th>
+		<th>Ocena</th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for row in data %}
+	<tr>
+		<td>{{row[0]}}</td>
+		<td>{{row[1]}}</td>
+		<td>{{row[2]}}</td>
+		<td>{{row[3]}}</td>
+		<td>{{row[4]}}</td>
+		<td>{{row[5]}}</td>
+		<td>{{row[6]}}</td>
+	</tr>
+	{% endfor %}
+	</tbody>
+</table>
+</body>
+</html>

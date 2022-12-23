@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<style>
+
+		td {
+			width: 150px;
+			text-align: center;
+			border: 2px solid blue;
+			padding: 5px;
+		}
+	</style>
+</head>
+<body>
+	<table>
+		<tr>
+			<th>Temat</th>
+			<th>Promotor</th>
+		</tr>
+		{% for row in data %}
+		<tr>
+			<td>{{ row[0] }}</td>
+			<td>{{ row[1] }}</td>
+		</tr>
+		{% endfor %}
+	</table>
+<h1>Przypisz temat</h1>
+<form method="POST" action="{{ url_for('tematy') }}">
+	<label for="tematy">Wybierz temat:</label><br>
+	<select id="tematy" name="temat_id">
+{% for temat in data %}
+	<option value="{{ temat.id }}">{{ temat.nazwa }}</option>
+{% endfor %}
+	</select>
+	<input type="submit" value="Przypisz">
+</form>
+</body>
+</html>
