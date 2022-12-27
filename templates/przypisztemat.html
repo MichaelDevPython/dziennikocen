@@ -5,18 +5,37 @@
 </head>
 <body>
 	<h1>Przypisz temat</h1>
-<<form method="POST" action="{{ url_for('przypisz_temat') }}">
-	<label for="tematy">Wybierz temat:</label><br>
-	<select id="tematy" name="temat_id">
-		{% for temat in data %}
-		<option value="{{ temat.id }}">{{ temat.nazwa }}</option>
+<table>
+	<tr>
+		<th>Temat</th>
+		<th>Promotor</th>
+	</tr>
+	{% for row in data %}
+	<tr>
+		<td>{{ row[0] }}</td>
+		<td>{{ row[1] }}</td>
+	</tr>
+	{% endfor %}
+</table>
+	<form method="POST" action={{url_for('tematy')}}>
+		{{ form.csrf_token }}
+		<input type="hidden" name="student_id" value="{{ session['username'] }}">
+		<select name="projekty">
+			{% for temat in data %}
+			<option value="{{ temat[0] }}">{{ temat[0] }} (promotor: {{ temat[1] }})</option>
+			{% endfor %}
+		</select>
+		<button type="submit">Przypisz</button>
+	</form>
+
+	{% if form.errors %}
+	<p>Formularz zawiera błędy:</p>
+	<ul>
+		{% for error in form.errors %}
+		<li>{{ error }}</li>
 		{% endfor %}
-	</select>
-	<input type="submit" value="Przypisz">
-</form>
-
-
-
+	</ul>
+	{% endif %}
 
 </body>
 </html>

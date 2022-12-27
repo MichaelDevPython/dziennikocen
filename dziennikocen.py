@@ -4,9 +4,9 @@ from flask.helpers import redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_manager, login_user,LoginManager, login_required,logout_user, current_user
 from flask_wtf import FlaskForm
-from flask_wtf.csrf import validate_csrf
-from wtforms import StringField, SubmitField,PasswordField,SelectField
-from wtforms.validators import InputRequired, Length, ValidationError
+from flask_wtf.csrf import CSRFProtect
+from wtforms import StringField, SubmitField,PasswordField,SelectField,IntegerField
+from wtforms.validators import InputRequired, Length, ValidationError,DataRequired
 from flask_bcrypt import Bcrypt
 #LIBRARY FOR SQL
 from sqlalchemy import create_engine, and_,select
@@ -27,7 +27,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:michal12@localhos
 app.config['SECRET_KEY'] ='sekretnyklucz'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
-
+csrf = CSRFProtect(app)
+csrf.init_app(app)
 #LOGIN MANAGENING
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -45,7 +46,7 @@ class Uzytkownicy(db.Model, UserMixin):
 
 class Studenci(db.Model):
     id = db.Column(db.Integer,primary_key=True)
-    nr_albumu = db.Column(db.String(4),nullable=False)
+    nr_albumu = db.Column(db.String(4),nullable=False,unique=True)
     imie = db.Column(db.String(255),nullable=False)
     nazwisko = db.Column(db.String(255),nullable=False)
     email = db.Column(db.String(255),nullable=False)
@@ -69,7 +70,7 @@ class Projekty(db.Model):
     promotor = db.Column(db.String(255),nullable=False)
     grupa = db.Column(db.String(255),nullable=False)
     data = db.Column(db.Date,nullable=False)
-    student_id = db.Column(db.Integer, db.ForeignKey('studenci.id'))
+    student_id = db.Column(db.String(4))
 
 class Oceny(db.Model):
     id = db.Column(db.Integer,primary_key=True)
@@ -96,15 +97,9 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Login")
 
 class PrzypiszProjektForm(FlaskForm):
-    projekty = SelectField('Projekty', choices=[])
+    projekty = SelectField('Projekty', choices=[], validators=[DataRequired()])
+    student_id = StringField('student_id', validators=[InputRequired()])
     submit = SubmitField('Przypisz')
-
-    def __init__(self):
-        # Pobierz wszystkie projekty z bazy danych
-        mycursor.execute('SELECT id, nazwa FROM Projekty')
-        projekty = mycursor.fetchall()
-        # Dodaj je do listy choices dla SelectField
-        self.projekty.choices = [(p[0], p[1]) for p in projekty]
 
 
 #PAGES CONFIG
@@ -135,20 +130,28 @@ def dane():
     else:
         return redirect(url_for('login'))
 
-
 @app.route('/user/tematy', methods=['GET','POST'])
+@login_required
 def tematy():
-  mycursor.execute('SELECT nazwa, promotor FROM Projekty WHERE student_id is NULL')
-  tematy = mycursor.fetchall()
-  return render_template('tematy.html', data=tematy)
-def przypisz_temat():
-    student_id = session['username']  # pobranie identyfikatora studenta z sesji
-    temat_id = request.form['temat_id']  # pobranie wybranego przez studenta tematu z formularza
-    mycursor.execute(
-        "UPDATE Projekty SET student_id = %s WHERE id = %s",
-        (student_id, temat_id)
-    )
-    db.session.commit()
+    user = session['username']
+    form1 = LoginForm()
+    form = PrzypiszProjektForm()
+    mycursor.execute('SELECT nazwa, promotor FROM Projekty WHERE student_id is NULL')
+    tematy = mycursor.fetchall()
+    form.projekty.choices = [(t[0], t[1]) for t in tematy]
+    
+    if form.validate_on_submit():
+        projekt_nazwa = form.projekty.data
+        student_id = user
+        mycursor.execute(
+            "UPDATE Projekty SET student_id = %s WHERE nazwa = %s",
+            (student_id, projekt_nazwa))
+        conn.commit()
+        return redirect(url_for('tematy'))
+    return render_template('tematy.html', data=tematy, form=form,form1=form1)
+
+
+        
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -184,8 +187,6 @@ def register():
         return redirect(url_for('login'))
 
     return render_template('register.html',form=form)
-
-
 
 
 if __name__ == "__main__":
